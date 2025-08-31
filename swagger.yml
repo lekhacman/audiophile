@@ -1,0 +1,312 @@
+openapi: 3.0.4
+info:
+  title: Audiophile
+  description: |-
+    Audio service
+  contact:
+    email: lekhacman@outlook.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:5174
+  - url: http://localhost:3000
+tags:
+  - name: asset
+    description: audio files operations
+  - name: user
+    description: user operations
+  - name: others
+    description: miscellaneous
+paths:
+  /v1/asset:
+    get:
+      tags:
+        - asset
+      summary: list asset
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+        '401':
+          description: Not logged in
+    post:
+      tags:
+        - asset
+      summary: upload an audio file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                category:
+                  type: string
+                  enum:
+                    - music
+                    - recording
+        required: true
+      responses:
+        '201':
+          description: Uploaded
+        '415':
+          description: Only audio files are supported
+  /v1/asset/{fileId}/blob:
+    get:
+      tags:
+        - asset
+      summary: download audio file.
+      parameters:
+        - in: path
+          name: fileId
+          description: uuid of the file
+          required: true
+          schema:
+            type: string
+            example: 8de788da-7c88-499b-8b87-5218c1ff7e82
+      responses:
+        '200':
+          description: successful operation
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: not found
+  /v1/asset/{fileId}/info:
+    get:
+      tags:
+        - asset
+      summary: get audio file info
+      parameters:
+        - in: path
+          name: fileId
+          description: uuid of the file
+          required: true
+          schema:
+            type: string
+            example: 8de788da-7c88-499b-8b87-5218c1ff7e82
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '404':
+          description: not found
+  /v1/user:
+    post:
+      tags:
+        - user
+      summary: Create user.
+      description: This can only be done by the logged in admin.
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: created
+    get:
+      tags:
+        - user
+      summary: list users
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  /v1/login:
+    post:
+      tags:
+        - user
+      summary: Logs user into the system.
+      description: Log into the system.
+      operationId: loginUser
+      requestBody:
+        description: login request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: JSESSIONID=c67ff93b-8f18-471c-a55d-1baac62ba7f2; Path=/; HttpOnly; SameSite=Strict; Secure=true;
+          content:
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Invalid username/password supplied
+  /v1/user/{username}:
+    get:
+      tags:
+        - user
+      summary: Get user by user name.
+      description: Get user detail based on username.
+      operationId: getUserByName
+      parameters:
+        - name: username
+          in: path
+          description: The name that needs to be fetched. Use user1 for testing
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+        '403':
+          description: Unauthorized
+    post:
+      tags:
+        - user
+      summary: Update user resource.
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      parameters:
+        - name: username
+          in: path
+          description: name that need to be deleted
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update an existent user in the store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: bad request
+        '404':
+          description: user not found
+    delete:
+      tags:
+        - user
+      summary: Delete user resource.
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      parameters:
+        - name: username
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted
+        '400':
+          description: Cannot self delete
+        '404':
+          description: User not found
+  /v1/bootstrap:
+    post:
+      tags:
+        - others
+      summary: Create first user.
+      operationId: create
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: created
+  /v1/health:
+    get:
+      tags:
+        - others
+      summary: get system's health
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Up
+                  pristine:
+                    type: boolean
+components:
+  schemas:
+    Asset:
+      type: object
+      properties:
+        fileId:
+          type: string
+          example: 8de788da-7c88-499b-8b87-5218c1ff7e82
+        name:
+          type: string
+          example: lecon-1.mp3
+        mimeType:
+          type: string
+          example: audio/mpeg
+        description:
+          type: string
+          example: audio description
+        category:
+          type: string
+          example: music
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: theUser
+        password:
+          type: string
+          example: '12345'
+        role:
+          type: string
+          enum:
+            - user
+            - admin
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+security:
+  - cookieAuth: []
