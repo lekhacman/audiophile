@@ -5,7 +5,7 @@ import { loginRequest } from "../../api/userApi.js";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 export default function LoginForm({ handleSubmit }) {
-  const methods = useForm({ resolver: yupResolver(loginRequest) });
+  const methods = useForm({ mode: 'onChange', resolver: yupResolver(loginRequest)});
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(handleSubmit)}>

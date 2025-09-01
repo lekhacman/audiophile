@@ -9,7 +9,7 @@ import Page from "../layout/Page.jsx";
 export default function UserPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const methods = useForm({ resolver: yupResolver(updateUserRequest) });
+  const methods = useForm({ mode: 'onChange', resolver: yupResolver(updateUserRequest) });
   function handleSubmit(user) {
     return update({ ...user, username: id }).then(() => navigate("/admin"));
   }

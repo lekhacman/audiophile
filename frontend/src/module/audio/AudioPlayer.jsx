@@ -2,8 +2,6 @@ import { useLoaderData, useParams } from "react-router";
 import { getAssetInfo } from "../../api/assetApi.js";
 import Page from "../layout/Page.jsx";
 
-// TODO: remove sample src
-// const src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3'
 export default function AudioPlayer() {
   const { id } = useParams();
   const assetInfo = useLoaderData();

@@ -11,7 +11,7 @@ export default function Field({ name, label, children }) {
       <ErrorMessage
         errors={errors}
         name={name}
-        render={(message) => <p>{message}</p>}
+        render={({message}) => <p style={{color: 'crimson'}}>{message}</p>}
       />
     </div>
   );
